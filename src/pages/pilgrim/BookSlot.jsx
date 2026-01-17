@@ -1,6 +1,57 @@
 import React, { useState } from "react";
 import { api } from "../../config/api";
 
+/* ----------------------------------------------------
+   ALGORITHM HELPERS (UI CALENDAR + SLOT GENERATOR)
+---------------------------------------------------- */
+
+const QUEUE_TYPES = ["Free", "Seeghra", "Atiseeghra"];
+
+// ✅ Consistent backend date format: YYYY-MM-DD
+function getDateKey(dateObj) {
+  const d = dateObj instanceof Date ? dateObj : new Date(dateObj);
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// ✅ Queue-aware date status algorithm (UI-only colors)
+function getDateStatus(date, queue) {
+  const seed = date.getDate() + queue.length;
+  if (seed % 7 === 0) return "red";
+  if (seed % 5 === 0) return "orange";
+  return "green";
+}
+
+// ✅ Slot generator per date + queue (UI-only seats)
+// (Backend will still validate real slot capacity)
+function getSlotsForDate(date, queue) {
+  const baseSlots = [
+    "06:00 - 06:30",
+    "06:30 - 07:00",
+    "11:00 - 11:30",
+    "11:30 - 12:00",
+    "17:00 - 17:30",
+  ];
+
+  return baseSlots.map((time, i) => ({
+    time,
+    seats:
+      queue === "Atiseeghra"
+        ? Math.max(0, 10 - i)
+        : queue === "Seeghra"
+        ? Math.max(0, 25 - i * 2)
+        : Math.max(0, 40 - i * 3),
+  }));
+}
+
+/* ----------------------------------------------------
+   MAIN COMPONENT
+---------------------------------------------------- */
+
 export default function BookSlot() {
   const [form, setForm] = useState({
     name: "",
@@ -24,68 +75,84 @@ export default function BookSlot() {
     proofFile: null,
     otherCase: "",
   });
-  const QUEUE_TYPES = [
-  "Free",
-  "Seeghra",
-  "Atiseeghra",
-];
-
 
   const [showCalendar, setShowCalendar] = useState(false);
 
+  // ✅ If priority enabled, treat as Seeghra for selection UI
   const effectiveQueue = form.priority ? "Seeghra" : form.queueType;
   const isOtherSelected = form.priority && form.priorityType === "Other";
 
+  const slots =
+    form.date ? getSlotsForDate(new Date(form.date), effectiveQueue) : [];
+
+  // ✅ BOOK TICKET (Backend Connected)
   const handleSubmit = async () => {
-  try {
-    if (!form.name || !form.phone || !form.date || !form.slot) {
-      alert("Please fill all required booking fields.");
-      return;
-    }
-
-    if (!form.idNumber || !form.idProofFile) {
-      alert("Please upload ID proof and enter ID number.");
-      return;
-    }
-
-    const fd = new FormData();
-
-    fd.append("name", form.name);
-    fd.append("phone", form.phone);
-    fd.append("date", form.date);
-    fd.append("slotTime", form.slot);
-    fd.append("idType", form.idType);
-    fd.append("idNumber", form.idNumber);
-
-    fd.append("priorityEnabled", form.priority);
-
-    // ✅ Mandatory ID proof for all bookings
-    fd.append("idProofFile", form.idProofFile);
-
-    // ✅ Priority booking
-    if (form.priority) {
-      fd.append("priorityType", form.priorityType);
-      fd.append("proofType", form.proofType);
-      fd.append("proofNumber", form.proofNumber);
-      fd.append("otherCase", form.otherCase || "");
-
-      if (form.proofFile) {
-        fd.append("priorityProofFile", form.proofFile);
+    try {
+      if (!form.name || !form.phone || !form.date || !form.slot) {
+        alert("Please fill all required booking fields.");
+        return;
       }
+
+      if (!form.idNumber || !form.idProofFile) {
+        alert("Please upload ID proof and enter ID number.");
+        return;
+      }
+
+      if (form.priority) {
+        if (!form.priorityType || !form.proofType || !form.proofNumber) {
+          alert("Priority proof details are mandatory.");
+          return;
+        }
+
+        if (!form.proofFile) {
+          alert("Priority proof document is mandatory.");
+          return;
+        }
+
+        if (form.priorityType === "Other" && (!form.otherCase || form.otherCase.trim() === "")) {
+          alert("Please specify your priority case in 'Other'.");
+          return;
+        }
+      }
+
+      const fd = new FormData();
+
+      fd.append("name", form.name);
+      fd.append("phone", form.phone);
+      fd.append("date", form.date);
+      fd.append("slotTime", form.slot);
+      fd.append("idType", form.idType);
+      fd.append("idNumber", form.idNumber);
+
+      fd.append("priorityEnabled", form.priority);
+
+      // ✅ Mandatory ID proof for all bookings
+      fd.append("idProofFile", form.idProofFile);
+
+      // ✅ Priority booking
+      if (form.priority) {
+        fd.append("priorityType", form.priorityType);
+        fd.append("proofType", form.proofType);
+        fd.append("proofNumber", form.proofNumber);
+        fd.append("otherCase", form.otherCase || "");
+
+        if (form.proofFile) {
+          fd.append("priorityProofFile", form.proofFile);
+        }
+      }
+
+      const res = await api.post("/api/tickets/book", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert(`✅ Ticket Booked!\nTicket ID: ${res.data.ticket.ticketId}`);
+
+      // Redirect to ticket page
+      window.location.href = "/pilgrim/ticket";
+    } catch (err) {
+      alert(err?.response?.data?.message || "Booking failed");
     }
-
-    const res = await api.post("/api/tickets/book", fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    alert(`✅ Ticket Booked!\nTicket ID: ${res.data.ticket.ticketId}`);
-
-    // Optionally redirect to ticket page
-    window.location.href = "/pilgrim/ticket";
-  } catch (err) {
-    alert(err?.response?.data?.message || "Booking failed");
-  }
-};
+  };
 
   return (
     <div className="bg-white border rounded-3xl shadow-soft p-6">
@@ -96,9 +163,7 @@ export default function BookSlot() {
         <Select
           label="Darshan Type *"
           value={form.queueType}
-          onChange={(v) =>
-            setForm({ ...form, queueType: v, date: "", slot: "" })
-          }
+          onChange={(v) => setForm({ ...form, queueType: v, date: "", slot: "" })}
           options={QUEUE_TYPES}
         />
         <div className="text-xs text-slate-600 mt-1">
@@ -112,7 +177,7 @@ export default function BookSlot() {
         <input
           readOnly
           value={form.date}
-          placeholder="DD/MM/YYYY"
+          placeholder="YYYY-MM-DD"
           onClick={() => setShowCalendar(!showCalendar)}
           className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white cursor-pointer"
         />
@@ -141,9 +206,9 @@ export default function BookSlot() {
                 key={s.time}
                 disabled={s.seats <= 0}
                 onClick={() => setForm({ ...form, slot: s.time })}
-                className={`p-4 rounded-2xl border flex justify-between items-center
+                className={`p-4 rounded-2xl border flex justify-between items-center transition
                   ${form.slot === s.time ? "ring-2 ring-brand-600" : ""}
-                  ${s.seats <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  ${s.seats <= 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-orange-50"}`}
               >
                 <div>
                   <div className="text-lg font-bold">{s.seats}</div>
@@ -152,6 +217,10 @@ export default function BookSlot() {
                 <div className="font-medium">{s.time}</div>
               </button>
             ))}
+          </div>
+
+          <div className="text-xs text-slate-500 mt-2">
+            *Final availability will be validated by the backend slot capacity.
           </div>
         </div>
       )}
@@ -227,9 +296,7 @@ export default function BookSlot() {
           <input
             type="checkbox"
             checked={form.priority}
-            onChange={(e) =>
-              setForm({ ...form, priority: e.target.checked })
-            }
+            onChange={(e) => setForm({ ...form, priority: e.target.checked })}
           />
           Enable Priority Access
         </label>
@@ -239,9 +306,7 @@ export default function BookSlot() {
             <Select
               label="Priority Type *"
               value={form.priorityType}
-              onChange={(v) =>
-                setForm({ ...form, priorityType: v })
-              }
+              onChange={(v) => setForm({ ...form, priorityType: v })}
               options={[
                 "Elderly",
                 "Differently-Abled",
@@ -254,9 +319,7 @@ export default function BookSlot() {
             <Select
               label="Proof Type *"
               value={form.proofType}
-              onChange={(v) =>
-                setForm({ ...form, proofType: v })
-              }
+              onChange={(v) => setForm({ ...form, proofType: v })}
               options={[
                 "Govt ID / Age Proof",
                 "Disability Certificate",
@@ -269,17 +332,13 @@ export default function BookSlot() {
             <Input
               label="Proof Number / Reference ID *"
               value={form.proofNumber}
-              onChange={(v) =>
-                setForm({ ...form, proofNumber: v })
-              }
+              onChange={(v) => setForm({ ...form, proofNumber: v })}
             />
 
             <FileUpload
               label="Upload Priority Proof *"
               subText="Allowed: JPG, PNG, PDF"
-              onChange={(f) =>
-                setForm({ ...form, proofFile: f })
-              }
+              onChange={(f) => setForm({ ...form, proofFile: f })}
               selectedFile={form.proofFile}
             />
 
@@ -287,9 +346,7 @@ export default function BookSlot() {
               <TextArea
                 label="Specify Other Case *"
                 value={form.otherCase}
-                onChange={(v) =>
-                  setForm({ ...form, otherCase: v })
-                }
+                onChange={(v) => setForm({ ...form, otherCase: v })}
               />
             )}
           </div>
@@ -298,7 +355,7 @@ export default function BookSlot() {
 
       <button
         onClick={handleSubmit}
-        className="mt-6 px-6 py-3 rounded-2xl bg-brand-600 text-white font-semibold"
+        className="mt-6 px-6 py-3 rounded-2xl bg-brand-600 text-white font-semibold hover:opacity-95"
       >
         Confirm Booking
       </button>
@@ -327,8 +384,7 @@ function Calendar({ queue, selectedDate, onSelect }) {
   }
 
   const colorClass = (date) => {
-    if (date < today)
-      return "bg-gray-200 text-gray-400 cursor-not-allowed";
+    if (date < today) return "bg-gray-200 text-gray-400 cursor-not-allowed";
     if (date > maxDate) return "hidden";
 
     const status = getDateStatus(date, queue);
@@ -337,16 +393,22 @@ function Calendar({ queue, selectedDate, onSelect }) {
     return "bg-green-500 text-white";
   };
 
+  const moveMonth = (dir) => {
+    const newView = new Date(view);
+    newView.setMonth(view.getMonth() + dir);
+    setView(newView);
+  };
+
   return (
     <div className="bg-white border rounded-2xl p-4 w-fit shadow-lg">
       <div className="flex justify-between items-center mb-3 font-semibold">
-        <button onClick={() => setView(new Date(view.setMonth(view.getMonth() - 1)))}>‹</button>
+        <button onClick={() => moveMonth(-1)}>‹</button>
         {view.toLocaleString("default", { month: "long", year: "numeric" })}
-        <button onClick={() => setView(new Date(view.setMonth(view.getMonth() + 1)))}>›</button>
+        <button onClick={() => moveMonth(1)}>›</button>
       </div>
 
       <div className="grid grid-cols-7 text-xs text-center mb-2">
-        {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
@@ -356,8 +418,9 @@ function Calendar({ queue, selectedDate, onSelect }) {
           d ? (
             <button
               key={i}
+              disabled={d < today || d > maxDate}
               onClick={() => onSelect(getDateKey(d))}
-              className={`h-9 w-9 rounded-md text-sm font-semibold
+              className={`h-9 w-9 rounded-md text-sm font-semibold transition
                 ${colorClass(d)}
                 ${selectedDate === getDateKey(d) ? "ring-2 ring-black" : ""}`}
             >
@@ -367,6 +430,20 @@ function Calendar({ queue, selectedDate, onSelect }) {
             <div key={i} />
           )
         )}
+      </div>
+
+      <div className="mt-3 text-xs text-slate-600">
+        <div className="flex gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1">
+            <span className="h-3 w-3 rounded bg-green-500"></span> Available
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-3 w-3 rounded bg-orange-400"></span> Limited
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-3 w-3 rounded bg-red-700"></span> Full
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -397,11 +474,13 @@ function Select({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full px-4 py-3 rounded-2xl border"
+        className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white"
       >
         <option value="">Select</option>
         {options.map((op) => (
-          <option key={op}>{op}</option>
+          <option key={op} value={op}>
+            {op}
+          </option>
         ))}
       </select>
     </div>
@@ -416,18 +495,17 @@ function FileUpload({ label, subText, onChange, selectedFile }) {
         type="file"
         accept=".jpg,.png,.pdf"
         onChange={(e) => onChange(e.target.files[0])}
+        className="mt-2 w-full"
       />
-      <div className="text-xs text-slate-500">{subText}</div>
-      {selectedFile && (
-        <div className="text-xs mt-1">{selectedFile.name}</div>
-      )}
+      <div className="text-xs text-slate-500 mt-1">{subText}</div>
+      {selectedFile && <div className="text-xs mt-1">{selectedFile.name}</div>}
     </div>
   );
 }
 
 function TextArea({ label, value, onChange }) {
   return (
-    <div>
+    <div className="md:col-span-2">
       <div className="text-sm font-semibold">{label}</div>
       <textarea
         value={value}
