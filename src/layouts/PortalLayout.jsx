@@ -29,7 +29,7 @@ function getNav(role) {
     return [
       { to: "/pilgrim", icon: LayoutDashboard, label: "Dashboard" },
       { to: "/pilgrim/book-slot", icon: BookOpen, label: "Book Slot" },
-      { to: "/pilgrim/ticket", icon: Ticket, label: "My Ticket" },
+      { to: "/pilgrim/tickets", icon: Ticket, label: "My Ticket" },
       { to: "/pilgrim/notifications", icon: Bell, label: "Notifications" },
       { to: "/pilgrim/sos", icon: Siren, label: "Emergency SOS" },
       

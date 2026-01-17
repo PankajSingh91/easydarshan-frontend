@@ -11,9 +11,10 @@ import Contact from "./pages/public/Contact";
 
 import PilgrimDashboard from "./pages/pilgrim/PilgrimDashboard";
 import BookSlot from "./pages/pilgrim/BookSlot";
-import MyTicket from "./pages/pilgrim/MyTicket";
+import MyTickets from "./pages/pilgrim/MyTickets";
 import Notifications from "./pages/pilgrim/Notifications";
 import SOS from "./pages/pilgrim/SOS";
+import TicketDetails from "./pages/pilgrim/TicketDetails";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import SlotControl from "./pages/admin/SlotControl";
@@ -63,7 +64,8 @@ export default function App() {
 
           <Route index element={<PilgrimDashboard />} />
           <Route path="book-slot" element={<BookSlot />} />
-          <Route path="ticket" element={<MyTicket />} />
+          <Route path="/pilgrim/tickets" element={<MyTickets />} />
+          <Route path="/pilgrim/ticket/:ticketId" element={<TicketDetails />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="sos" element={<SOS />} />
         </Route>
