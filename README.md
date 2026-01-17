@@ -1,4 +1,4 @@
-# EasyDarshan Frontend 🛕
+# DevDarshanam Frontend 🛕
 Temple & Pilgrimage Crowd Management System (Hackathon MVP)
 
 ## Features (UI)
