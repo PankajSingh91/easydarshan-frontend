@@ -41,7 +41,7 @@ export default function SlotControl() {
       </div>
 
       <button
-        onClick={() => alert("UI only ✅ Backend enforcement in next steps")}
+        onClick={() => alert("UI only. Backend enforcement in next steps")}
         className="mt-6 px-5 py-3 rounded-2xl bg-brand-600 text-white font-semibold hover:opacity-95"
       >
         Save Settings

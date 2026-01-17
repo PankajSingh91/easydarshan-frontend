@@ -24,6 +24,7 @@ import SecurityDashboard from "./pages/security/SecurityDashboard";
 import Incidents from "./pages/security/Incidents";
 import Deployment from "./pages/security/Deployment";
 
+
 import MedicalDashboard from "./pages/medical/MedicalDashboard";
 import Resources from "./pages/medical/Resources";
 import EmergencyLog from "./pages/medical/EmergencyLog";
