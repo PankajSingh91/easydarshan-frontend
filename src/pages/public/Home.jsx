@@ -76,12 +76,12 @@ export default function Home() {
             </div>
 
             <h1 className="text-4xl md:text-5xl font-extrabold mt-4 leading-tight">
-              EasyDarshan <br /> Temple Crowd Management
+              DevDarshanam <br /> Temple Crowd Management
             </h1>
 
             <p className="mt-4 text-white/90 text-base md:text-lg">
               Mandatory slot booking, QR verification, real-time crowd monitoring,
-              priority access & SOS emergency response — designed to keep every
+              priority access & SOS emergency response, designed to keep every
               devotee safe and informed.
             </p>
 
@@ -102,16 +102,16 @@ export default function Home() {
 
             <div className="mt-6 flex flex-wrap gap-2 text-xs text-white/80">
               <span className="px-3 py-2 rounded-2xl bg-white/10 border border-white/15">
-                ✅ QR Gate Entry
+                QR Gate Entry
               </span>
               <span className="px-3 py-2 rounded-2xl bg-white/10 border border-white/15">
-                ✅ Priority Access
+                Priority Access
               </span>
               <span className="px-3 py-2 rounded-2xl bg-white/10 border border-white/15">
-                ✅ Live Heatmaps
+                Live Heatmaps
               </span>
               <span className="px-3 py-2 rounded-2xl bg-white/10 border border-white/15">
-                ✅ SOS Dispatch
+                SOS Dispatch
               </span>
             </div>
           </motion.div>
@@ -208,27 +208,11 @@ export default function Home() {
           />
         </div>
 
-        <div className="mt-10 flex justify-center gap-3 flex-wrap">
-          <Link
-            to="/admin"
-            className="px-4 py-3 rounded-2xl bg-white border shadow-soft hover:bg-orange-50"
-          >
-            Open Temple Admin Dashboard
-          </Link>
-          <Link
-            to="/security"
-            className="px-4 py-3 rounded-2xl bg-white border shadow-soft hover:bg-orange-50"
-          >
-            Open Security Dashboard
-          </Link>
-          <Link
-            to="/medical"
-            className="px-4 py-3 rounded-2xl bg-white border shadow-soft hover:bg-orange-50"
-          >
-            Open Medical Dashboard
-          </Link>
-        </div>
+      <div className="mt-10 text-center text-xs text-slate-500">
+          Operational dashboards are accessible to authorized personnel only.
       </div>
+      </div> 
+
 
       {/* Darshan Services (Reference Website Inspired) */}
       <div className="container-max pb-14">
@@ -240,7 +224,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-extrabold mt-1">Darshan & Facilities</h3>
               <p className="text-slate-600 mt-2">
-                Inspired by temple portals like Srisailam — but upgraded with live crowd
+                Upgraded platform with live crowd
                 safety + real-time emergency response.
               </p>
             </div>
@@ -311,7 +295,7 @@ export default function Home() {
               Book faster • Enter smoother • Stay safer
             </h3>
             <p className="text-white/90 mt-2">
-              EasyDarshan improves devotee experience and empowers temple staff with
+              DevDarshanam improves devotee experience and empowers temple staff with
               dashboards for crowd flow, heatmaps and emergency readiness.
             </p>
 
@@ -336,12 +320,12 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-6 text-xs text-white/75">
+           <div className="mt-6 text-xs text-white/75">
               ⚡ Hackathon MVP: UI now, real-time backend integration next step.
             </div>
           </div>
         </div>
       </div>
-    </div>
+      </div> 
   );
 }

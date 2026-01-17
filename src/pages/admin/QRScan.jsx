@@ -16,11 +16,11 @@ export default function QRScan() {
       (decodedText) => {
         setResult(decodedText);
 
-        // ✅ Mock verification (backend later)
+        
         if (decodedText.includes("ED-")) {
-          setStatus("✅ Ticket Verified Successfully (UI Only)");
+          setStatus("Ticket Verified Successfully (UI Only)");
         } else {
-          setStatus("❌ Invalid QR / Ticket");
+          setStatus("Invalid QR / Ticket");
         }
 
         scanner.clear().catch(() => {});

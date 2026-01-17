@@ -43,7 +43,7 @@ export default function PublicLayout() {
             </div>
             <div>
               <div className="text-lg font-bold leading-tight">
-                EasyDarshan
+                DevDarshanam
               </div>
               <div className="text-xs opacity-90">
                 Slot Booking • Crowd Safety • SOS
@@ -85,7 +85,7 @@ export default function PublicLayout() {
       <footer className="mt-16 bg-white border-t">
         <div className="container-max py-10 grid md:grid-cols-3 gap-6">
           <div>
-            <div className="font-bold text-lg">EasyDarshan</div>
+            <div className="font-bold text-lg">DevDarshanam</div>
             <p className="text-sm text-slate-600 mt-2">
               A smart temple crowd management system for safe and smooth pilgrimage.
             </p>
@@ -99,24 +99,19 @@ export default function PublicLayout() {
             </div>
           </div>
           <div>
-            <div className="font-semibold">Portals</div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link className="px-3 py-2 rounded-xl bg-orange-50 border hover:bg-orange-100 text-sm" to="/admin">
-                Temple Admin
-              </Link>
-              <Link className="px-3 py-2 rounded-xl bg-orange-50 border hover:bg-orange-100 text-sm" to="/security">
-                Security
-              </Link>
-              <Link className="px-3 py-2 rounded-xl bg-orange-50 border hover:bg-orange-100 text-sm" to="/medical">
-                Medical
-              </Link>
-            </div>
+            <div>
+          <div className="font-semibold">Access Control</div>
+            <p className="mt-3 text-sm text-slate-600">
+            Operational dashboards are accessible to authorized personnel only.
+          </p>
+          </div>
+
           </div>
         </div>
 
         <div className="text-xs text-slate-500 border-t py-4">
           <div className="container-max flex items-center justify-between">
-            <span>© {new Date().getFullYear()} EasyDarshan</span>
+            <span>© {new Date().getFullYear()} DevDarshanam</span>
             <span>Built for 24-hour hackathon</span>
           </div>
         </div>

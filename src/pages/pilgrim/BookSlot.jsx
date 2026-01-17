@@ -1,114 +1,212 @@
 import React, { useState } from "react";
 
+/* ----------------------------------------------------
+   ALGORITHM HELPERS (NO HARDCODED DATES)
+---------------------------------------------------- */
+
+const QUEUE_TYPES = ["Free", "Seeghra", "Atiseeghra"];
+
+function getDateKey(date) {
+  return date.toISOString().split("T")[0];
+}
+
+// Queue-aware date status algorithm
+function getDateStatus(date, queue) {
+  const seed = date.getDate() + queue.length;
+  if (seed % 7 === 0) return "red";
+  if (seed % 5 === 0) return "orange";
+  return "green";
+}
+
+// Slot generator per date + queue
+function getSlotsForDate(date, queue) {
+  const baseSlots = [
+    "06:00 - 06:30",
+    "06:30 - 07:00",
+    "11:00 - 11:30",
+    "11:30 - 12:00",
+    "17:00 - 17:30",
+  ];
+
+  return baseSlots.map((time, i) => ({
+    time,
+    seats:
+      queue === "Atiseeghra"
+        ? Math.max(0, 10 - i)
+        : queue === "Seeghra"
+        ? Math.max(0, 25 - i * 2)
+        : Math.max(0, 40 - i * 3),
+  }));
+}
+
+/* ----------------------------------------------------
+   MAIN COMPONENT
+---------------------------------------------------- */
+
 export default function BookSlot() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    dob: "",
+    gender: "",
+    persons: 1,
+
+    queueType: "Free",
     date: "",
     slot: "",
 
-    // Normal ID
     idType: "Aadhaar",
     idNumber: "",
-    idProofFile: null, // ✅ NEW: upload for normal bookings
+    idProofFile: null,
 
-    // Priority Access
     priority: false,
     priorityType: "Elderly",
-
-    // Priority Proof
     proofType: "",
     proofNumber: "",
     proofFile: null,
-
-    // Other case
     otherCase: "",
   });
 
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const effectiveQueue = form.priority ? "Seeghra" : form.queueType;
   const isOtherSelected = form.priority && form.priorityType === "Other";
 
+  const slots =
+    form.date ? getSlotsForDate(new Date(form.date), effectiveQueue) : [];
+
   const handleSubmit = () => {
-    // ✅ Basic required fields
     if (!form.name || !form.phone || !form.date || !form.slot) {
       alert("Please fill all required booking fields.");
       return;
     }
 
-    if (!form.idNumber) {
-      alert("Please enter a valid ID Number.");
+    if (!form.idNumber || !form.idProofFile) {
+      alert("Valid ID proof is mandatory.");
       return;
     }
 
-    // ✅ Mandatory ID proof upload for all bookings
-    if (!form.idProofFile) {
-      alert("Please upload a valid ID proof document for verification.");
-      return;
-    }
-
-    // ✅ Priority validation
     if (form.priority) {
-      if (!form.priorityType) {
-        alert("Please select priority access type.");
-        return;
-      }
-
       if (!form.proofType || !form.proofNumber || !form.proofFile) {
-        alert(
-          "Priority access requires valid proof: Proof Type, Proof Number and Proof Document upload."
-        );
-        return;
-      }
-
-      if (form.priorityType === "Other" && !form.otherCase.trim()) {
-        alert("Please specify your case/reason for 'Other' priority access.");
+        alert("Priority proof is mandatory.");
         return;
       }
     }
 
-    alert("✅ Booking Submitted (UI Only)\nTicket will be generated in backend step.");
+    alert("✅ Booking Submitted (UI Only)");
   };
 
   return (
     <div className="bg-white border rounded-3xl shadow-soft p-6">
       <h2 className="text-2xl font-extrabold">Book Darshan Slot</h2>
-      <p className="text-slate-600 mt-1">
-        Mandatory pre-enrollment with slot-based booking during peak hours.
-      </p>
 
-      {/* Booking Form */}
-      <div className="mt-6 grid md:grid-cols-2 gap-4">
-        <Input
-          label="Full Name *"
-          value={form.name}
-          onChange={(v) => setForm({ ...form, name: v })}
-        />
-
-        <Input
-          label="Mobile Number *"
-          value={form.phone}
-          onChange={(v) => setForm({ ...form, phone: v })}
-        />
-
-        <Input
-          label="Date *"
-          type="date"
-          value={form.date}
-          onChange={(v) => setForm({ ...form, date: v })}
-        />
-
+      {/* ---------------- DARSHAN TYPE ---------------- */}
+      <div className="mt-6">
         <Select
-          label="Slot Time *"
-          value={form.slot}
-          onChange={(v) => setForm({ ...form, slot: v })}
-          options={[
-            "06:00 - 06:30",
-            "06:30 - 07:00",
-            "11:00 - 11:30",
-            "11:30 - 12:00",
-            "17:00 - 17:30",
-          ]}
+          label="Darshan Type *"
+          value={form.queueType}
+          onChange={(v) =>
+            setForm({ ...form, queueType: v, date: "", slot: "" })
+          }
+          options={QUEUE_TYPES}
+        />
+        <div className="text-xs text-slate-600 mt-1">
+          Free: ~60 mins | Seeghra: ~25 mins | Atiseeghra: ~10 mins
+        </div>
+      </div>
+
+      {/* ---------------- DATE SELECTION ---------------- */}
+      <div className="mt-6 relative">
+        <div className="text-sm font-semibold">Select Date *</div>
+        <input
+          readOnly
+          value={form.date}
+          placeholder="DD/MM/YYYY"
+          onClick={() => setShowCalendar(!showCalendar)}
+          className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white cursor-pointer"
         />
 
+        {showCalendar && (
+          <div className="absolute z-30 mt-2">
+            <Calendar
+              queue={effectiveQueue}
+              selectedDate={form.date}
+              onSelect={(d) => {
+                setForm({ ...form, date: d, slot: "" });
+                setShowCalendar(false);
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ---------------- SLOT SELECTION ---------------- */}
+      {form.date && (
+        <div className="mt-6">
+          <div className="text-sm font-semibold">Slot Time *</div>
+          <div className="grid md:grid-cols-2 gap-4 mt-2">
+            {slots.map((s) => (
+              <button
+                key={s.time}
+                disabled={s.seats <= 0}
+                onClick={() => setForm({ ...form, slot: s.time })}
+                className={`p-4 rounded-2xl border flex justify-between items-center
+                  ${form.slot === s.time ? "ring-2 ring-brand-600" : ""}
+                  ${s.seats <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <div>
+                  <div className="text-lg font-bold">{s.seats}</div>
+                  <div className="text-xs">Available</div>
+                </div>
+                <div className="font-medium">{s.time}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- BOOKING DETAILS ---------------- */}
+      <div className="mt-8 border-t pt-6">
+        <div className="font-semibold mb-4">Booking Details</div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <Input
+            label="Full Name *"
+            value={form.name}
+            onChange={(v) => setForm({ ...form, name: v })}
+          />
+
+          <Input
+            label="Mobile Number *"
+            value={form.phone}
+            onChange={(v) => setForm({ ...form, phone: v })}
+          />
+
+          <Input
+            label="Date of Birth *"
+            type="date"
+            value={form.dob}
+            onChange={(v) => setForm({ ...form, dob: v })}
+          />
+
+          <Select
+            label="Gender *"
+            value={form.gender}
+            onChange={(v) => setForm({ ...form, gender: v })}
+            options={["Male", "Female", "Other"]}
+          />
+
+          <Select
+            label="Number of Persons *"
+            value={form.persons}
+            onChange={(v) => setForm({ ...form, persons: v })}
+            options={[1, 2, 3, 4, 5]}
+          />
+        </div>
+      </div>
+
+      {/* ---------------- ID DETAILS ---------------- */}
+      <div className="mt-6 grid md:grid-cols-2 gap-4">
         <Select
           label="ID Type *"
           value={form.idType}
@@ -122,46 +220,28 @@ export default function BookSlot() {
           onChange={(v) => setForm({ ...form, idNumber: v })}
         />
 
-        {/* ✅ NEW ID Proof Upload */}
         <div className="md:col-span-2">
           <FileUpload
             label="Upload ID Proof Document *"
-            subText="Required for all bookings. Allowed: JPG, PNG, PDF"
-            onChange={(file) => setForm({ ...form, idProofFile: file })}
+            subText="Allowed: JPG, PNG, PDF"
+            onChange={(f) => setForm({ ...form, idProofFile: f })}
             selectedFile={form.idProofFile}
           />
         </div>
       </div>
 
-      {/* Priority Access Block */}
+      {/* ---------------- PRIORITY ACCESS ---------------- */}
       <div className="mt-6 rounded-3xl border bg-orange-50 p-5">
-        <div className="font-semibold">Priority Access (Optional)</div>
-        <p className="text-sm text-slate-600 mt-1">
-          Available for Elderly, Differently-Abled, Women with Children, Pregnant and special cases.
-          Proof is mandatory for verification.
-        </p>
-
-        <div className="mt-3 flex items-center gap-3">
+        <label className="flex items-center gap-3">
           <input
             type="checkbox"
             checked={form.priority}
             onChange={(e) =>
-              setForm({
-                ...form,
-                priority: e.target.checked,
-
-                // reset priority proof when disabled
-                priorityType: e.target.checked ? form.priorityType : "Elderly",
-                proofType: e.target.checked ? form.proofType : "",
-                proofNumber: e.target.checked ? form.proofNumber : "",
-                proofFile: e.target.checked ? form.proofFile : null,
-                otherCase: e.target.checked ? form.otherCase : "",
-              })
+              setForm({ ...form, priority: e.target.checked })
             }
-            className="h-5 w-5"
           />
-          <span className="text-sm font-medium">Enable Priority Access</span>
-        </div>
+          Enable Priority Access
+        </label>
 
         {form.priority && (
           <div className="mt-4 grid md:grid-cols-2 gap-4">
@@ -169,17 +249,13 @@ export default function BookSlot() {
               label="Priority Type *"
               value={form.priorityType}
               onChange={(v) =>
-                setForm({
-                  ...form,
-                  priorityType: v,
-                  otherCase: v === "Other" ? form.otherCase : "",
-                })
+                setForm({ ...form, priorityType: v })
               }
               options={[
                 "Elderly",
                 "Differently-Abled",
-                "Women with Children",
                 "Pregnant",
+                "Women with Children",
                 "Other",
               ]}
             />
@@ -187,51 +263,51 @@ export default function BookSlot() {
             <Select
               label="Proof Type *"
               value={form.proofType}
-              onChange={(v) => setForm({ ...form, proofType: v })}
+              onChange={(v) =>
+                setForm({ ...form, proofType: v })
+              }
               options={[
-                "Government ID / Age Proof",
+                "Govt ID / Age Proof",
                 "Disability Certificate",
-                "Hospital / Medical Certificate",
-                "Pregnancy Report / Doctor Note",
-                "Other Supporting Document",
+                "Medical Certificate",
+                "Pregnancy Report",
+                "Other",
               ]}
             />
 
             <Input
               label="Proof Number / Reference ID *"
               value={form.proofNumber}
-              onChange={(v) => setForm({ ...form, proofNumber: v })}
-              placeholder="Eg: CERT-2026-0091"
+              onChange={(v) =>
+                setForm({ ...form, proofNumber: v })
+              }
             />
 
             <FileUpload
-              label="Upload Priority Proof Document *"
-              subText="Required only for priority booking. Allowed: JPG, PNG, PDF"
-              onChange={(file) => setForm({ ...form, proofFile: file })}
+              label="Upload Priority Proof *"
+              subText="Allowed: JPG, PNG, PDF"
+              onChange={(f) =>
+                setForm({ ...form, proofFile: f })
+              }
               selectedFile={form.proofFile}
             />
 
             {isOtherSelected && (
-              <div className="md:col-span-2">
-                <TextArea
-                  label="Specify your case (Other) *"
-                  value={form.otherCase}
-                  onChange={(v) => setForm({ ...form, otherCase: v })}
-                  placeholder="Example: Temporary injury, special assistance required..."
-                />
-              </div>
+              <TextArea
+                label="Specify Other Case *"
+                value={form.otherCase}
+                onChange={(v) =>
+                  setForm({ ...form, otherCase: v })
+                }
+              />
             )}
-
-            <div className="md:col-span-2 text-xs text-slate-600 mt-1">
-              ✅ Note: Priority access will be confirmed after verification at gate/admin panel.
-            </div>
           </div>
         )}
       </div>
 
       <button
         onClick={handleSubmit}
-        className="mt-6 px-5 py-3 rounded-2xl bg-brand-600 text-white font-semibold hover:opacity-95"
+        className="mt-6 px-6 py-3 rounded-2xl bg-brand-600 text-white font-semibold"
       >
         Confirm Booking
       </button>
@@ -239,9 +315,77 @@ export default function BookSlot() {
   );
 }
 
-/* ---------------- UI Components ---------------- */
+/* ----------------------------------------------------
+   CALENDAR COMPONENT (MONTH VIEW, 120 DAYS)
+---------------------------------------------------- */
 
-function Input({ label, value, onChange, type = "text", placeholder }) {
+function Calendar({ queue, selectedDate, onSelect }) {
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 120);
+
+  const [view, setView] = useState(new Date());
+
+  const start = new Date(view.getFullYear(), view.getMonth(), 1);
+  const end = new Date(view.getFullYear(), view.getMonth() + 1, 0);
+
+  const days = [];
+  for (let i = 0; i < start.getDay(); i++) days.push(null);
+  for (let d = 1; d <= end.getDate(); d++) {
+    days.push(new Date(view.getFullYear(), view.getMonth(), d));
+  }
+
+  const colorClass = (date) => {
+    if (date < today)
+      return "bg-gray-200 text-gray-400 cursor-not-allowed";
+    if (date > maxDate) return "hidden";
+
+    const status = getDateStatus(date, queue);
+    if (status === "red") return "bg-red-700 text-white";
+    if (status === "orange") return "bg-orange-400 text-white";
+    return "bg-green-500 text-white";
+  };
+
+  return (
+    <div className="bg-white border rounded-2xl p-4 w-fit shadow-lg">
+      <div className="flex justify-between items-center mb-3 font-semibold">
+        <button onClick={() => setView(new Date(view.setMonth(view.getMonth() - 1)))}>‹</button>
+        {view.toLocaleString("default", { month: "long", year: "numeric" })}
+        <button onClick={() => setView(new Date(view.setMonth(view.getMonth() + 1)))}>›</button>
+      </div>
+
+      <div className="grid grid-cols-7 text-xs text-center mb-2">
+        {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+          <div key={d}>{d}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((d, i) =>
+          d ? (
+            <button
+              key={i}
+              onClick={() => onSelect(getDateKey(d))}
+              className={`h-9 w-9 rounded-md text-sm font-semibold
+                ${colorClass(d)}
+                ${selectedDate === getDateKey(d) ? "ring-2 ring-black" : ""}`}
+            >
+              {d.getDate()}
+            </button>
+          ) : (
+            <div key={i} />
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------------------------------
+   UI COMPONENTS
+---------------------------------------------------- */
+
+function Input({ label, value, onChange, type = "text" }) {
   return (
     <div>
       <div className="text-sm font-semibold">{label}</div>
@@ -249,8 +393,7 @@ function Input({ label, value, onChange, type = "text", placeholder }) {
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
-        placeholder={placeholder || `Enter ${label.replace("*", "").trim()}`}
+        className="mt-2 w-full px-4 py-3 rounded-2xl border"
       />
     </div>
   );
@@ -263,13 +406,11 @@ function Select({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
+        className="mt-2 w-full px-4 py-3 rounded-2xl border"
       >
         <option value="">Select</option>
         {options.map((op) => (
-          <option key={op} value={op}>
-            {op}
-          </option>
+          <option key={op}>{op}</option>
         ))}
       </select>
     </div>
@@ -280,34 +421,27 @@ function FileUpload({ label, subText, onChange, selectedFile }) {
   return (
     <div>
       <div className="text-sm font-semibold">{label}</div>
-      <div className="mt-2 w-full rounded-2xl border bg-white p-3">
-        <input
-          type="file"
-          accept=".jpg,.jpeg,.png,.pdf"
-          onChange={(e) => onChange(e.target.files?.[0] || null)}
-          className="w-full text-sm"
-        />
-        <div className="text-xs text-slate-500 mt-2">{subText}</div>
-        {selectedFile && (
-          <div className="text-xs mt-2">
-            ✅ Selected:{" "}
-            <span className="font-semibold">{selectedFile.name}</span>
-          </div>
-        )}
-      </div>
+      <input
+        type="file"
+        accept=".jpg,.png,.pdf"
+        onChange={(e) => onChange(e.target.files[0])}
+      />
+      <div className="text-xs text-slate-500">{subText}</div>
+      {selectedFile && (
+        <div className="text-xs mt-1">{selectedFile.name}</div>
+      )}
     </div>
   );
 }
 
-function TextArea({ label, value, onChange, placeholder }) {
+function TextArea({ label, value, onChange }) {
   return (
     <div>
       <div className="text-sm font-semibold">{label}</div>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="mt-2 w-full px-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 focus:ring-orange-200 min-h-[110px]"
+        className="mt-2 w-full px-4 py-3 rounded-2xl border min-h-[110px]"
       />
     </div>
   );

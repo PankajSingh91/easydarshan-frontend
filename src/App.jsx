@@ -22,11 +22,12 @@ import Reports from "./pages/admin/Reports";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import Incidents from "./pages/security/Incidents";
 import Deployment from "./pages/security/Deployment";
+import QRScan from "./pages/admin/QRScan";
 
 import MedicalDashboard from "./pages/medical/MedicalDashboard";
 import Resources from "./pages/medical/Resources";
 import EmergencyLog from "./pages/medical/EmergencyLog";
-import QRScan from "./pages/pilgrim/QRScan";
+
 
 
 export default function App() {
@@ -51,7 +52,7 @@ export default function App() {
           <Route path="ticket" element={<MyTicket />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="sos" element={<SOS />} />
-          <Route path="scan" element={<QRScan />} />
+          
         </Route>
 
         {/* Admin */}
@@ -62,6 +63,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="slot-control" element={<SlotControl />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="scan" element={<QRScan />} />
         </Route>
 
         {/* Security */}
