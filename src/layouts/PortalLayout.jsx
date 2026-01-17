@@ -13,6 +13,7 @@ import {
   Siren,
   MapPinned,
   LogOut,
+  QrCode,
 } from "lucide-react";
 
 const navItem = ({ isActive }) =>
