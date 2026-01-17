@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { api } from "../../config/api";
 
 export default function BookSlot() {
   const [form, setForm] = useState({
@@ -27,46 +28,56 @@ export default function BookSlot() {
 
   const isOtherSelected = form.priority && form.priorityType === "Other";
 
-  const handleSubmit = () => {
-    // ✅ Basic required fields
+  const handleSubmit = async () => {
+  try {
     if (!form.name || !form.phone || !form.date || !form.slot) {
       alert("Please fill all required booking fields.");
       return;
     }
 
-    if (!form.idNumber) {
-      alert("Please enter a valid ID Number.");
+    if (!form.idNumber || !form.idProofFile) {
+      alert("Please upload ID proof and enter ID number.");
       return;
     }
 
-    // ✅ Mandatory ID proof upload for all bookings
-    if (!form.idProofFile) {
-      alert("Please upload a valid ID proof document for verification.");
-      return;
-    }
+    const fd = new FormData();
 
-    // ✅ Priority validation
+    fd.append("name", form.name);
+    fd.append("phone", form.phone);
+    fd.append("date", form.date);
+    fd.append("slotTime", form.slot);
+    fd.append("idType", form.idType);
+    fd.append("idNumber", form.idNumber);
+
+    fd.append("priorityEnabled", form.priority);
+
+    // ✅ Mandatory ID proof for all bookings
+    fd.append("idProofFile", form.idProofFile);
+
+    // ✅ Priority booking
     if (form.priority) {
-      if (!form.priorityType) {
-        alert("Please select priority access type.");
-        return;
-      }
+      fd.append("priorityType", form.priorityType);
+      fd.append("proofType", form.proofType);
+      fd.append("proofNumber", form.proofNumber);
+      fd.append("otherCase", form.otherCase || "");
 
-      if (!form.proofType || !form.proofNumber || !form.proofFile) {
-        alert(
-          "Priority access requires valid proof: Proof Type, Proof Number and Proof Document upload."
-        );
-        return;
-      }
-
-      if (form.priorityType === "Other" && !form.otherCase.trim()) {
-        alert("Please specify your case/reason for 'Other' priority access.");
-        return;
+      if (form.proofFile) {
+        fd.append("priorityProofFile", form.proofFile);
       }
     }
 
-    alert("✅ Booking Submitted (UI Only)\nTicket will be generated in backend step.");
-  };
+    const res = await api.post("/api/tickets/book", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    alert(`✅ Ticket Booked!\nTicket ID: ${res.data.ticket.ticketId}`);
+
+    // Optionally redirect to ticket page
+    window.location.href = "/pilgrim/ticket";
+  } catch (err) {
+    alert(err?.response?.data?.message || "Booking failed");
+  }
+};
 
   return (
     <div className="bg-white border rounded-3xl shadow-soft p-6">

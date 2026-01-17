@@ -18,6 +18,7 @@ import SOS from "./pages/pilgrim/SOS";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import SlotControl from "./pages/admin/SlotControl";
 import Reports from "./pages/admin/Reports";
+import QRScan from "./pages/admin/QRScan";
 
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import Incidents from "./pages/security/Incidents";
@@ -26,7 +27,15 @@ import Deployment from "./pages/security/Deployment";
 import MedicalDashboard from "./pages/medical/MedicalDashboard";
 import Resources from "./pages/medical/Resources";
 import EmergencyLog from "./pages/medical/EmergencyLog";
-import QRScan from "./pages/pilgrim/QRScan";
+
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import VerifyOtp from "./pages/auth/VerifyOtp";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 
 export default function App() {
@@ -43,15 +52,19 @@ export default function App() {
 
         {/* Pilgrim Portal */}
         <Route
-          path="/pilgrim"
-          element={<PortalLayout role="pilgrim" title="Pilgrim Portal" />}
-        >
+  path="/pilgrim"
+  element={
+    <ProtectedRoute>
+      <PortalLayout role="pilgrim" title="Pilgrim Portal" />
+    </ProtectedRoute>
+  }
+>
+
           <Route index element={<PilgrimDashboard />} />
           <Route path="book-slot" element={<BookSlot />} />
           <Route path="ticket" element={<MyTicket />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="sos" element={<SOS />} />
-          <Route path="scan" element={<QRScan />} />
         </Route>
 
         {/* Admin */}
@@ -62,6 +75,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="slot-control" element={<SlotControl />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="scan" element={<QRScan />} />
         </Route>
 
         {/* Security */}
@@ -83,6 +97,13 @@ export default function App() {
           <Route path="resources" element={<Resources />} />
           <Route path="emergency-log" element={<EmergencyLog />} />
         </Route>
+        <Route path="/pilgrim/login" element={<Login />} />
+<Route path="/pilgrim/register" element={<Register />} />
+<Route path="/pilgrim/verify-otp" element={<VerifyOtp />} />
+<Route path="/pilgrim/forgot-password" element={<ForgotPassword />} />
+<Route path="/pilgrim/reset-password" element={<ResetPassword />} />
+
+
       </Routes>
     </BrowserRouter>
   );

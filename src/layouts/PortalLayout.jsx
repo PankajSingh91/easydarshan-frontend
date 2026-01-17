@@ -15,6 +15,8 @@ import {
   LogOut,
   QrCode,
 } from "lucide-react";
+import { clearToken } from "../utils/auth";
+
 
 const navItem = ({ isActive }) =>
   `flex items-center gap-3 px-4 py-3 rounded-2xl transition text-sm font-medium ${
@@ -31,7 +33,7 @@ function getNav(role) {
       { to: "/pilgrim/ticket", icon: Ticket, label: "My Ticket" },
       { to: "/pilgrim/notifications", icon: Bell, label: "Notifications" },
       { to: "/pilgrim/sos", icon: Siren, label: "Emergency SOS" },
-      { to: "/pilgrim/scan", icon: QrCode, label: "QR Scan (Gate)" },
+      
     ];
   }
 
@@ -40,6 +42,7 @@ function getNav(role) {
       { to: "/admin", icon: LayoutDashboard, label: "Live Dashboard" },
       { to: "/admin/slot-control", icon: Settings, label: "Slot Control" },
       { to: "/admin/reports", icon: FileText, label: "Reports" },
+      { to: "/admin/scan", icon: QrCode, label: "QR Scan (Gate)" },
     ];
   }
 
@@ -105,9 +108,13 @@ export default function PortalLayout({ role, title }) {
               </div>
             </div>
 
-            <button className="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 text-white hover:opacity-95">
+            <button 
+            onClick={() => {
+    clearToken();
+    window.location.href = "/pilgrim/login";
+  }}className="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 text-white hover:opacity-95">
               <LogOut size={18} />
-              Logout (UI)
+              Logout
             </button>
           </aside>
 
