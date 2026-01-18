@@ -1,48 +1,128 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import StatCard from "../../components/StatCard";
-import { ShieldAlert, Activity, MapPinned, Users } from "lucide-react";
+import { Stethoscope, Ambulance, Users, Siren } from "lucide-react";
 
-export default function SecurityDashboard() {
+/* ✅ SOCKET INSTANCE */
+import { socket } from "../../config/socket";
+
+export default function MedicalDashboard() {
+  /* ✅ LIVE MEDICAL SOS STATE */
+  const [medicalSOS, setMedicalSOS] = useState([]);
+
+  /* ---------------- LOAD EXISTING SOS ON REFRESH ---------------- */
+  useEffect(() => {
+    const fetchSOS = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/sos/active?department=MEDICAL`,
+          { credentials: "include" }
+        );
+
+        const data = await res.json();
+        if (data.success) {
+          setMedicalSOS(data.sos);
+        }
+      } catch (err) {
+        console.error("Failed to load SOS", err);
+      }
+    };
+
+    fetchSOS();
+  }, []);
+
+
+  /* ---------------- SOCKET LISTENER ---------------- */
+  useEffect(() => {
+    socket.on("SOS_ALERT", (data) => {
+      console.log("🏥 MEDICAL RECEIVED SOS:", data);
+
+      if (data.department === "MEDICAL") {
+        setMedicalSOS((prev) => [data, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("SOS_ALERT");
+    };
+  }, []);
+
   return (
     <div className="grid gap-6">
+      {/* ---------------- STATS ---------------- */}
       <div className="grid md:grid-cols-4 gap-4">
-        <StatCard title="Overcrowding Alerts" value="3" sub="Active" icon={ShieldAlert} />
-        <StatCard title="Bottlenecks" value="1" sub="Queue Line" icon={Activity} />
-        <StatCard title="Zones Monitoring" value="6" sub="Heatmap live" icon={MapPinned} />
-        <StatCard title="Personnel Deployed" value="42" sub="On duty" icon={Users} />
+        <StatCard
+          title="Active SOS"
+          value={medicalSOS.length}
+          sub="Pending dispatch"
+          icon={Siren}
+        />
+        <StatCard
+          title="Ambulances"
+          value="3"
+          sub="Available"
+          icon={Ambulance}
+        />
+        <StatCard
+          title="First-Aid Teams"
+          value="6"
+          sub="On duty"
+          icon={Users}
+        />
+        <StatCard
+          title="Medical Booths"
+          value="4"
+          sub="Operational"
+          icon={Stethoscope}
+        />
       </div>
 
+      {/* ---------------- EMERGENCY DISPATCH PANEL ---------------- */}
       <div className="bg-white border rounded-3xl shadow-soft p-6">
-        <h3 className="text-xl font-extrabold">Temple Zone Heatmap (UI)</h3>
+        <h3 className="text-xl font-extrabold">
+          Emergency Dispatch Panel
+        </h3>
         <p className="text-sm text-slate-600 mt-1">
-          Live zone risk visualization for quick action.
+          Assign medical units to location-based SOS calls.
         </p>
 
-        <div className="mt-5 grid md:grid-cols-3 gap-4">
-          <Heat zone="Gate 1" status="SAFE" />
-          <Heat zone="Queue Line" status="CRITICAL" />
-          <Heat zone="Darshan Hall" status="HIGH" />
-          <Heat zone="Exit" status="SAFE" />
-          <Heat zone="Prasadam Area" status="MEDIUM" />
-          <Heat zone="Parking" status="SAFE" />
+        {medicalSOS.length === 0 && (
+          <div className="mt-4 text-sm text-slate-500">
+            No active medical emergencies.
+          </div>
+        )}
+
+        <div className="mt-5 grid gap-3">
+          {medicalSOS.map((sos) => (
+            <SOSRow
+              key={sos.caseId}
+              id={sos.caseId}
+              zone={sos.zone}
+              status={sos.urgency === "HIGH" ? "Critical" : "Pending"}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function Heat({ zone, status }) {
-  const style = {
-    SAFE: "bg-green-50 border-green-200 text-green-700",
-    MEDIUM: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    HIGH: "bg-orange-50 border-orange-200 text-orange-800",
-    CRITICAL: "bg-red-50 border-red-200 text-red-700",
-  };
+/* ---------------- SOS ROW (UNCHANGED UI) ---------------- */
+
+function SOSRow({ id, zone, status }) {
   return (
-    <div className={`rounded-3xl border p-5 ${style[status]}`}>
-      <div className="text-xs opacity-70">Zone</div>
-      <div className="font-bold mt-1">{zone}</div>
-      <div className="text-sm font-extrabold mt-2">{status}</div>
+    <div className="rounded-3xl border bg-orange-50 p-5 flex items-center justify-between">
+      <div>
+        <div className="text-xs text-slate-500">{id}</div>
+        <div className="font-bold">
+          Emergency Request • {zone}
+        </div>
+        <div className="text-sm text-slate-600">
+          Status: {status}
+        </div>
+      </div>
+      <button className="px-4 py-2 rounded-2xl bg-brand-600 text-white hover:opacity-95">
+        Dispatch
+      </button>
     </div>
   );
 }
