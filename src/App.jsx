@@ -20,6 +20,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import SlotControl from "./pages/admin/SlotControl";
 import Reports from "./pages/admin/Reports";
 import QRScan from "./pages/admin/QRScan";
+import DelayAlerts from "./pages/admin/DelayAlerts";
+import CrowdAlerts from "./pages/admin/CrowdAlerts";
+
+
 
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import Incidents from "./pages/security/Incidents";
@@ -79,6 +83,8 @@ export default function App() {
           <Route path="slot-control" element={<SlotControl />} />
           <Route path="reports" element={<Reports />} />
           <Route path="scan" element={<QRScan />} />
+          <Route path="/admin/delay-alerts" element={<DelayAlerts />} />
+          <Route path="/admin/crowd-alerts" element={<CrowdAlerts />} />
         </Route>
 
         {/* Security */}

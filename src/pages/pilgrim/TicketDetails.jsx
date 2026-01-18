@@ -22,35 +22,57 @@ export default function TicketDetails() {
 
   useEffect(() => {
     fetchTicket();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
 
   if (loading) return <div className="p-6">Loading Ticket...</div>;
   if (!ticket) return <div className="p-6">Ticket not found</div>;
+
+  const assignedGate = ticket.assignedGate || "Main Gate";
+  const assignedZone = ticket.assignedZone || "Gate 1";
 
   return (
     <div className="bg-white border rounded-3xl shadow-soft p-6">
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-extrabold">Your Ticket</h2>
+
           <div className="mt-2 text-slate-600">
             Ticket ID: <b>{ticket.ticketId}</b>
           </div>
+
           <div className="text-slate-600">
             {ticket.date} • {ticket.slotTime} • {ticket.darshanType}
           </div>
+
           <div className="text-slate-600">
             Persons: <b>{ticket.personsCount}</b> • Status:{" "}
             <b className="text-brand-700">{ticket.status}</b>
           </div>
+
+          {/* ✅ Assigned Gate Highlight */}
+          <div className="mt-4 rounded-2xl border bg-orange-50 p-4">
+            <div className="text-xs text-slate-600">Assigned Entry Gate</div>
+            <div className="text-xl font-extrabold text-brand-700">
+              {assignedGate}
+            </div>
+            <div className="text-sm text-slate-600 mt-1">
+              Zone: <b>{assignedZone}</b>
+            </div>
+          </div>
         </div>
 
         {/* ✅ QR */}
-        <div className="border rounded-3xl p-4 bg-orange-50 text-center">
-          <div className="font-semibold mb-2">Scan at Gate</div>
+        <div className="border rounded-3xl p-4 bg-orange-50 text-center min-w-[220px]">
+          <div className="font-semibold mb-2">Scan at {assignedGate}</div>
 
-          <QRCodeCanvas value={ticket.ticketId} size={150} />
+          <QRCodeCanvas value={ticket.ticketId} size={160} />
 
           <div className="text-xs text-slate-600 mt-2">{ticket.ticketId}</div>
+
+          <div className="text-[11px] text-slate-600 mt-2">
+            Show this QR at <b>{assignedGate}</b>
+          </div>
         </div>
       </div>
 
@@ -59,16 +81,18 @@ export default function TicketDetails() {
         <h3 className="text-lg font-extrabold">Pilgrim List</h3>
 
         <div className="mt-4 space-y-4">
-          {ticket.pilgrims.map((p, index) => (
+          {ticket.pilgrims?.map((p, index) => (
             <div key={index} className="rounded-3xl border p-4 bg-white">
               <div className="flex justify-between flex-wrap gap-2">
                 <div>
                   <div className="font-bold">
                     Person {index + 1}: {p.fullName}
                   </div>
+
                   <div className="text-sm text-slate-600">
                     {p.gender} • DOB: {p.dob} • Phone: {p.phone}
                   </div>
+
                   <div className="text-sm text-slate-600">
                     ID: {p.idType} • {p.idNumber}
                   </div>
@@ -95,6 +119,7 @@ export default function TicketDetails() {
         </div>
       </div>
 
+      {/* ✅ Refresh */}
       <button
         onClick={fetchTicket}
         className="mt-6 px-4 py-2 rounded-2xl border bg-white hover:bg-orange-50"
