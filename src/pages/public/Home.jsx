@@ -64,8 +64,17 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <div className="bg-gradient-to-b from-brand-800 to-brand-900 text-white">
-        <div className="container-max py-14 grid lg:grid-cols-2 gap-10 items-center">
+      <div
+        className="relative text-white"
+        style={{
+          backgroundImage: "url(/temple-bg.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-900/40 to-brand-900/95" />
+        <div className="relative container-max py-14 grid lg:grid-cols-2 gap-10 items-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -76,7 +85,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-4xl md:text-5xl font-extrabold mt-4 leading-tight">
-              DevDarshanam <br /> Temple Crowd Management
+              DevDarshanam <br /> - Temple Crowd Management
             </h1>
 
             <p className="mt-4 text-white/90 text-base md:text-lg">
@@ -120,7 +129,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35 }}
-            className="bg-white/10 border border-white/15 rounded-3xl p-6 shadow-soft"
+            className="bg-white/10 border border-white/15 rounded-3xl p-6 shadow-soft backdrop-blur-sm"
           >
             <div className="font-semibold text-lg">Today’s Temple Status</div>
             <div className="mt-4 grid sm:grid-cols-2 gap-4">
@@ -176,45 +185,20 @@ export default function Home() {
         </div>
 
         <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Feature
-            icon={CalendarCheck}
-            title="Slot Booking & Pre-enrollment"
-            desc="Mandatory pre-booking during peak hours with capacity limits."
-          />
-          <Feature
-            icon={QrCode}
-            title="QR/ID Verification"
-            desc="Fast gate verification and fraud-proof entry control."
-          />
-          <Feature
-            icon={BellRing}
-            title="Live Alerts & Notifications"
-            desc="Entry reminders, delays, and zone crowd conditions."
-          />
-          <Feature
-            icon={ShieldCheck}
-            title="Priority Access"
-            desc="Dedicated priority for elderly, differently-abled & women with children."
-          />
-          <Feature
-            icon={Activity}
-            title="Real-Time Crowd Monitoring"
-            desc="Zone-wise density + entry/exit counts to prevent bottlenecks."
-          />
-          <Feature
-            icon={Siren}
-            title="Emergency SOS Dispatch"
-            desc="Location-based SOS alerts to medical and security units."
-          />
+          <Feature icon={CalendarCheck} title="Slot Booking & Pre-enrollment" desc="Mandatory pre-booking during peak hours with capacity limits." />
+          <Feature icon={QrCode} title="QR/ID Verification" desc="Fast gate verification and fraud-proof entry control." />
+          <Feature icon={BellRing} title="Live Alerts & Notifications" desc="Entry reminders, delays, and zone crowd conditions." />
+          <Feature icon={ShieldCheck} title="Priority Access" desc="Dedicated priority for elderly, differently-abled & women with children." />
+          <Feature icon={Activity} title="Real-Time Crowd Monitoring" desc="Zone-wise density + entry/exit counts to prevent bottlenecks." />
+          <Feature icon={Siren} title="Emergency SOS Dispatch" desc="Location-based SOS alerts to medical and security units." />
         </div>
 
-      <div className="mt-10 text-center text-xs text-slate-500">
+        <div className="mt-10 text-center text-xs text-slate-500">
           Operational dashboards are accessible to authorized personnel only.
+        </div>
       </div>
-      </div> 
 
-
-      {/* Darshan Services (Reference Website Inspired) */}
+      {/* Darshan Services */}
       <div className="container-max pb-14">
         <div className="bg-white border rounded-3xl shadow-soft p-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -224,8 +208,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-extrabold mt-1">Darshan & Facilities</h3>
               <p className="text-slate-600 mt-2">
-                Upgraded platform with live crowd
-                safety + real-time emergency response.
+                Upgraded platform with live crowd safety + real-time emergency response.
               </p>
             </div>
 
@@ -238,24 +221,9 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid md:grid-cols-3 gap-4">
-            <ServiceCard
-              icon={Clock}
-              tag="Timings"
-              title="Darshan Timings"
-              desc="Check recommended entry slots and avoid peak crowd rush."
-            />
-            <ServiceCard
-              icon={ClipboardList}
-              tag="Booking"
-              title="Seva Booking (Slot-based)"
-              desc="Book darshan slots digitally for smooth and controlled entry."
-            />
-            <ServiceCard
-              icon={MapPin}
-              tag="Navigation"
-              title="Temple Zones & Entry Gates"
-              desc="Get gate guidance based on zone crowd density and queue routing."
-            />
+            <ServiceCard icon={Clock} tag="Timings" title="Darshan Timings" desc="Check recommended entry slots and avoid peak crowd rush." />
+            <ServiceCard icon={ClipboardList} tag="Booking" title="Seva Booking (Slot-based)" desc="Book darshan slots digitally for smooth and controlled entry." />
+            <ServiceCard icon={MapPin} tag="Navigation" title="Temple Zones & Entry Gates" desc="Get gate guidance based on zone crowd density and queue routing." />
           </div>
         </div>
       </div>
@@ -271,61 +239,66 @@ export default function Home() {
             </p>
 
             <div className="mt-6 grid gap-3">
-              <InfoRow
-                icon={Info}
-                title="Mandatory Booking"
-                value="Booking becomes mandatory automatically during peak crowd."
-              />
-              <InfoRow
-                icon={ShieldAlert}
-                title="Entry Control"
-                value="Gate verification allows only valid QR tickets for slot entry."
-              />
-              <InfoRow
-                icon={Hospital}
-                title="Emergency Response"
-                value="SOS sends location to nearest medical/security unit instantly."
-              />
+              <InfoRow icon={Info} title="Mandatory Booking" value="Booking becomes mandatory automatically during peak crowd." />
+              <InfoRow icon={ShieldAlert} title="Entry Control" value="Gate verification allows only valid QR tickets for slot entry." />
+              <InfoRow icon={Hospital} title="Emergency Response" value="SOS sends location to nearest medical/security unit instantly." />
             </div>
           </div>
 
-          <div className="bg-gradient-to-b from-brand-700 to-brand-900 text-white rounded-3xl shadow-soft p-8">
-            <div className="text-sm text-white/80 font-semibold">Quick Access</div>
-            <h3 className="text-2xl font-extrabold mt-1">
-              Book faster • Enter smoother • Stay safer
-            </h3>
-            <p className="text-white/90 mt-2">
-              DevDarshanam improves devotee experience and empowers temple staff with
-              dashboards for crowd flow, heatmaps and emergency readiness.
-            </p>
+          <div className="relative bg-gradient-to-b from-brand-700 to-brand-900 text-white rounded-3xl shadow-soft p-8 overflow-hidden">
+            {/* Full background Ganpati image */}
+            <img
+              src="/ganpati.png"
+              alt="Ganpati"
+              className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none"
+            />
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                to="/pilgrim/book-slot"
-                className="px-5 py-3 rounded-2xl bg-white text-brand-800 font-semibold hover:opacity-95"
-              >
-                Book Slot
-              </Link>
-              <Link
-                to="/pilgrim/ticket"
-                className="px-5 py-3 rounded-2xl bg-white/10 border border-white/20 font-semibold hover:bg-white/15"
-              >
-                View My Ticket
-              </Link>
-              <Link
-                to="/pilgrim/sos"
-                className="px-5 py-3 rounded-2xl bg-red-500/90 border border-white/10 font-semibold hover:opacity-95"
-              >
-                Emergency SOS
-              </Link>
-            </div>
+            {/* Dark overlay to keep text readable */}
+            <div className="absolute inset-0 bg-brand-900/40" />
 
-           <div className="mt-6 text-xs text-white/75">
-              ⚡ Hackathon MVP: UI now, real-time backend integration next step.
+            {/* Content */}
+            <div className="relative z-10">
+              <div className="text-sm text-white/80 font-semibold">Quick Access</div>
+
+              <h3 className="text-2xl font-extrabold mt-1">
+                Book faster • Enter smoother • Stay safer
+              </h3>
+
+              <p className="text-white/90 mt-2 max-w-xl">
+                DevDarshanam improves devotee experience and empowers temple staff with
+                dashboards for crowd flow, heatmaps and emergency readiness.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  to="/pilgrim/book-slot"
+                  className="px-5 py-3 rounded-2xl bg-white text-brand-800 font-semibold hover:opacity-95"
+                >
+                  Book Slot
+                </Link>
+
+                <Link
+                  to="/pilgrim/ticket"
+                  className="px-5 py-3 rounded-2xl bg-white/10 border border-white/20 font-semibold hover:bg-white/15"
+                >
+                  View My Ticket
+                </Link>
+
+                <Link
+                  to="/pilgrim/sos"
+                  className="px-5 py-3 rounded-2xl bg-red-500/90 border border-white/10 font-semibold hover:opacity-95"
+                >
+                  Emergency SOS
+                </Link>
+              </div>
+
+
             </div>
           </div>
+
+
         </div>
       </div>
-      </div> 
+    </div>
   );
 }
